@@ -1,0 +1,271 @@
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#8ab7d0;color:#fff;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}canvas{display:block;width:100%;height:100%;touch-action:none}#hud{position:fixed;inset:0;pointer-events:none}.hudbox{position:absolute;top:18px;padding:11px 16px;font-weight:800;letter-spacing:.04em;font-size:13px}.left{left:18px}.right{right:18px}.statsmall{display:block;color:#d4ddce;font-size:10px;font-weight:600;letter-spacing:.07em;margin-top:4px}.center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:19px;height:19px}.center:before,.center:after{content:"";position:absolute;background:#fff;left:9px;top:2px;width:1px;height:15px;box-shadow:0 0 3px #000}.center:after{left:2px;top:9px;width:15px;height:1px}.center.hot:before,.center.hot:after{background:#ffd269;box-shadow:0 0 6px #f4b93b}.center.found:before,.center.found:after{background:#baf1d4;box-shadow:0 0 6px #6de0a2}.prompt{position:absolute;left:50%;top:calc(50% + 30px);transform:translateX(-50%);padding:8px 13px;border-radius:8px;background:#17231dcc;font-size:13px;font-weight:750;opacity:0;transition:opacity .12s;white-space:nowrap}.prompt.show{opacity:1}.notice{position:absolute;top:83px;left:50%;transform:translateX(-50%);padding:9px 14px;border-radius:9px;background:#17231ddd;color:#f7e6bd;font-size:12px;font-weight:700;opacity:0;transition:opacity .18s;white-space:nowrap}.notice.show{opacity:1}.detector{position:absolute;top:50%;right:24px;transform:translateY(-50%);padding:13px 16px;line-height:1.6;font-size:12px;letter-spacing:.06em}.detector strong{color:#f5ce70}.detector small{display:block;color:#d9dfd3;font-size:10px}.hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);padding:10px 14px;color:#edf2e8;font-size:12px;white-space:nowrap}.sound{pointer-events:auto;position:absolute;top:19px;right:205px;color:white;background:#16221ec4;border:1px solid #fff3;border-radius:10px;padding:9px 12px;cursor:pointer}.mobile-tip{display:none}@media(max-width:680px){.hudbox{top:10px;padding:9px 11px;font-size:11px}.left{left:9px}.right{right:9px}.sound{right:9px;top:61px}.hint{bottom:8px;max-width:95%;white-space:normal;text-align:center;font-size:10px}.detector{right:8px;top:62%;padding:8px 10px;font-size:10px}.mobile-tip{display:block}}
+.weather-hud{position:absolute;right:18px;top:78px;padding:10px 14px;font-size:19px;font-weight:850;letter-spacing:.04em}.weather-toast{position:absolute;left:50%;top:18%;transform:translate(-50%,-8px);padding:13px 20px;text-align:center;background:#17231ddd;border:1px solid #ffffff35;border-radius:12px;font-size:18px;font-weight:900;opacity:0;pointer-events:none}.weather-toast.show{animation:weatherToast 3s ease forwards}.weather-toast small{display:block;font-size:11px;letter-spacing:.16em;color:#f5ce70}@keyframes weatherToast{0%{opacity:0;transform:translate(-50%,-8px)}8.33%{opacity:1;transform:translate(-50%,0)}83.33%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}@media(max-width:680px){.weather-hud{top:105px;right:9px;padding:8px 10px;font-size:15px}}
+.hay-inventory-summary{display:block;max-width:310px;white-space:normal;line-height:1.5;color:#f1dfb7}.hay-swatch{width:15px;height:15px;border-radius:50%;border:1px solid #fff7;display:inline-block}
+.farm-compass{position:fixed;left:50%;top:18px;transform:translateX(-50%);padding:8px 12px;border-radius:10px;background:#17231dcc;border:1px solid #fff3;color:#f5ce70;font-size:11px;font-weight:850;letter-spacing:.08em;pointer-events:none}.farm-compass[hidden]{display:none}.farm-compass-arrow{display:inline-block;margin:0 4px;font-size:18px;vertical-align:middle;transition:transform .08s linear}
+.prompt.cow{white-space:pre-line;line-height:1.65;text-align:center;min-width:290px}.cow-help-button{position:absolute;left:50%;bottom:62px;transform:translateX(-50%);pointer-events:auto;padding:9px 13px;border:1px solid #fff4;border-radius:9px;background:#263b2c;color:#fff1c8;font:800 12px system-ui;cursor:pointer}.cow-help-button[hidden]{display:none}#helpCowButton{left:calc(50% - 5px);transform:translateX(-100%)}#petCowButton{left:calc(50% + 5px);transform:none}@media(max-width:680px){.cow-help-button{bottom:66px;font-size:11px}}
+#taskHud{top:178px;font-size:10px;line-height:1.7}
+
+/* Warm paper, field greens, and photographic hay across the farm menus. */
+:root {
+  --paper: #f7f2e7;
+  --ink: #29372b;
+  --muted: #626957;
+  --green: #344c35;
+  --line: #d9d5c4;
+  --gold: #a36c27;
+}
+.glass {
+  background: #233627ed;
+  border: 1px solid #e7d7a83d;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px #15211826;
+  backdrop-filter: blur(9px);
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: #14231bd1;
+  backdrop-filter: blur(7px);
+  transition: opacity .25s, visibility .25s;
+}
+.overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.overlay.hidden * { pointer-events: none; }
+.panel {
+  position: relative;
+  width: min(590px, 100%);
+  max-height: calc(100dvh - 56px);
+  overflow: auto;
+  padding: 40px;
+  color: var(--ink);
+  text-align: left;
+  background: var(--paper);
+  border: 1px solid #fff9;
+  border-radius: 20px;
+  box-shadow: 0 30px 90px #07150c66, inset 0 0 0 6px #fffcf566;
+  scrollbar-width: thin;
+  scrollbar-color: #a7ae96 transparent;
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+.eyebrow::before { content: ""; width: 24px; height: 1px; background: currentColor; flex-shrink: 0; }
+.panel h1 {
+  margin: 14px 0 18px;
+  font: 500 clamp(30px, 5vw, 44px)/1.07 Georgia, "Times New Roman", serif;
+  letter-spacing: -.045em;
+  overflow-wrap: anywhere;
+}
+.panel h2 { font: 500 25px/1.2 Georgia, serif; letter-spacing: -.025em; }
+.panel h3 { color: var(--green); }
+.panel p { max-width: 600px; margin: 12px 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+.panel .sub { font-size: 12px; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.btn {
+  pointer-events: auto;
+  min-height: 46px;
+  max-width: 100%;
+  padding: 13px 20px;
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  background: var(--green);
+  color: #fff9ec;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.5;
+  letter-spacing: .055em;
+  cursor: pointer;
+  transition: background .15s, transform .15s, box-shadow .15s;
+}
+.btn:hover:not(:disabled) { background: #243d28; transform: translateY(-2px); box-shadow: 0 5px 12px #253c2826; }
+.btn:active:not(:disabled) { transform: translateY(0); }
+.btn.secondary { color: var(--green); background: transparent; border-color: #b5bdab; }
+.btn.secondary:hover:not(:disabled) { background: #e6eadc; }
+.btn:disabled { cursor: not-allowed; opacity: .48; }
+.btn:focus-visible, .panel input:focus-visible, .sound:focus-visible {
+  outline: 3px solid #be872f;
+  outline-offset: 3px;
+}
+#menu .panel { width: min(940px, 100%); padding: 54px 48px; }
+#menu .panel > * { max-width: 60%; }
+#menu .panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 66%;
+  min-height: 100%;
+  background: linear-gradient(180deg, #25342112, #26332265), url("assets/art/farm-cover.png") 65% center/cover;
+  border-left: 5px solid #e8ddc6;
+  border-radius: 0 19px 19px 0;
+  pointer-events: none;
+}
+#menu .panel::after {
+  content: "SLOW DAYS. SMALL DISCOVERIES.";
+  position: absolute;
+  top: 34px;
+  right: 22px;
+  width: 27%;
+  color: #fff8e6;
+  text-align: center;
+  text-shadow: 0 1px 8px #1d281b;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  pointer-events: none;
+}
+#menu h1 { font-size: clamp(40px, 4.8vw, 62px); margin: 24px 0; }
+#menu h1 em { color: #7b844c; font-weight: 400; }
+#menu .menu-intro { color: var(--ink); font-size: 15px; }
+#menu .sub { margin-top: 20px; }
+#play { min-width: 160px; display: inline-flex; align-items: center; justify-content: space-between; gap: 32px; }
+#play span { font-size: 21px; line-height: 1; }
+#howText { margin-top: 28px; padding-top: 10px; border-top: 1px solid var(--line); }
+#howText p { font-size: 12px; }
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; font-size: 11px; color: var(--muted); }
+.controls span { padding: 10px; border: 1px solid var(--line); border-radius: 6px; }
+.key { color: var(--green); font-style: normal; font-weight: 800; }
+.tool-panel { width: min(800px, 100%); }
+.tool-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
+.tool-card { min-width: 0; padding: 20px; background: #fffcf5; border: 1px solid var(--line); border-radius: 12px; }
+.tool-card h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: .025em; }
+.tool-card p { margin: 8px 0 16px; font-size: 12px; }
+.tool-card .btn { padding: 10px 14px; }
+.tool-card:last-child { grid-column: 1/-1; }
+.tool-card .actions { margin-top: 12px; }
+.treasure-bag-upgrade { margin: 0; }
+.farm-shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 12px 0 24px; }
+.farm-shop-grid .btn { min-height: 64px; text-align: left; padding: 13px 16px; font-size: 10px; }
+.season-event { margin: 24px 0; padding: 24px; background: #e9e5ce; border: 1px solid #d0c69b; border-radius: 12px; }
+.season-event h2 { margin: 0; color: #6b522b; }
+.season-event p { font-size: 12px; }
+.season-event .btn { max-width: 100%; }
+.result { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0; padding: 16px 0; border-block: 1px solid var(--line); }
+.result > span { padding: 10px 14px; border-radius: 8px; background: #e8eadc; color: var(--green); font-size: 12px; }
+.result b { font-weight: 800; }
+.victory h1 { color: var(--green); }
+.treasure-rows { display: grid; gap: 8px; margin: 22px 0; }
+.treasure-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 65px 70px; gap: 8px; align-items: center; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: #fffcf5; font-size: 12px; }
+.treasure-row input { accent-color: var(--green); }
+.treasure-row input[type=number] { width: 65px; padding: 9px 6px; border: 1px solid #b5bdab; border-radius: 6px; background: #fffdf8; color: var(--ink); font: inherit; }
+.treasure-row small { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; }
+.hay-row { grid-template-columns: 20px 16px minmax(0, 1fr) 58px 60px; }
+.hay-row input[type=number] { width: 58px; }
+.panel .hay-shop-total { font-size: 16px; font-weight: 800; color: var(--green); }
+@media (max-width: 680px) {
+  .overlay { padding: 12px; }
+  .panel { max-height: calc(100dvh - 24px); padding: 28px 20px; border-radius: 14px; }
+  #menu .panel { padding: 158px 24px 30px; }
+  #menu .panel > * { max-width: none; }
+  #menu .panel::before { inset: 0 0 auto; height: 120px; min-height: 0; border-left: 0; border-bottom: 4px solid #e8ddc6; border-radius: 13px 13px 0 0; }
+  #menu .panel::after { top: 53px; right: 0; width: 100%; }
+  #menu h1 { font-size: clamp(35px, 9vw, 54px); margin: 18px 0; }
+  .panel h1 { font-size: 34px; }
+  .tool-cards { grid-template-columns: 1fr; }
+  .tool-card:last-child { grid-column: auto; }
+  .tool-card { padding: 16px; }
+  .actions .btn { flex: 1 1 130px; }
+  .treasure-row { grid-template-columns: 20px minmax(0, 1fr) 58px 42px; padding: 10px 8px; gap: 6px; font-size: 11px; }
+  .treasure-row input[type=number] { width: 58px; }
+  .hay-row { grid-template-columns: 18px 12px minmax(0, 1fr) 50px 36px; }
+  .hay-row input[type=number] { width: 50px; }
+  .hay-swatch { width: 12px; height: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay, .btn { transition: none; }
+  .btn:hover:not(:disabled) { transform: none; }
+}
+
+.item-art {
+  display: block;
+  flex-shrink: 0;
+  aspect-ratio: 1;
+  background-color: #e9dfce;
+  background-size: 400% 400%;
+  background-repeat: no-repeat;
+  border-radius: 10px;
+}
+.card-art { width: min(100%, 180px); margin: 0 auto 18px; }
+.button-art { display: inline-block; vertical-align: middle; width: 42px; margin: -5px 10px -5px 0; border-radius: 6px; }
+.modal-art { width: 138px; margin: 0 0 24px; }
+.row-art { float: left; width: 40px; margin: 0 8px 4px 0; border-radius: 5px; }
+.catalog-panel { width: min(1100px, 100%); }
+.catalog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.catalog-header h1 { margin-bottom: 0; }
+.catalog-header .btn { flex-shrink: 0; }
+.catalog-label { display: block; margin: 24px 0 8px; font-size: 11px; font-weight: 750; color: var(--muted); }
+#catalogFilter { width: min(100%, 300px); padding: 12px 14px; color: var(--ink); background: #fffdf6; border: 1px solid #b5bdab; border-radius: 8px; font: inherit; font-size: 13px; }
+#catalogFilter:focus-visible { outline: 3px solid #be872f; outline-offset: 3px; }
+.catalog-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
+.catalog-card { min-width: 0; padding: 10px; background: #fffcf5; border: 1px solid var(--line); border-radius: 12px; }
+.catalog-card .item-art { width: 100%; }
+.catalog-card h3 { margin: 14px 4px 6px; font-size: 13px; overflow-wrap: anywhere; }
+.catalog-card p { margin: 0 4px 8px; font-size: 11px; line-height: 1.7; }
+.guide-button, .water-button { position: absolute; pointer-events: auto; border: 1px solid #e7d7a85c; border-radius: 9px; padding: 12px 16px; background: #233627ed; color: #fff8e5; font: 750 11px/1.5 system-ui, sans-serif; cursor: pointer; }
+.guide-button { right: 18px; bottom: 66px; }
+.water-button { left: 50%; bottom: 112px; transform: translateX(-50%); background: #284f52; }
+.water-button[hidden] { display: none; }
+#touchControls { display: none; position: absolute; inset: 0; pointer-events: none; }
+#touchControls[hidden] { display: none; }
+.guide-button:focus-visible, .water-button:focus-visible { outline: 3px solid #e7b75d; outline-offset: 3px; }
+@media (max-width: 850px) {
+  .catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .catalog-card { padding: 7px; }
+  .catalog-card h3 { font-size: 12px; }
+  .catalog-header { display: block; }
+  .catalog-header .btn { margin-top: 16px; }
+  .card-art { width: 144px; }
+  .modal-art { width: 108px; }
+  .row-art { float: none; width: 36px; margin-bottom: 6px; }
+  .guide-button { bottom: 158px; right: 9px; padding: 9px 10px; font-size: 10px; }
+  .water-button { bottom: 112px; font-size: 10px; white-space: nowrap; }
+}
+@media (pointer: coarse), (max-width: 750px) {
+  #touchControls:not([hidden]) { display: block; }
+  #touchControls button {
+    pointer-events: auto;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    width: 44px;
+    min-height: 46px;
+    padding: 0;
+    color: #fff8e5;
+    background: #233627e8;
+    border: 1px solid #e7d7a873;
+    border-radius: 12px;
+    font: 800 12px/1 system-ui, sans-serif;
+  }
+  #touchControls button.pressed { background: #647c44; border-color: #f3d598; }
+  #touchControls button:focus-visible { outline: 3px solid #e7b75d; outline-offset: 2px; }
+  .move-pad, .touch-actions { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); display: grid; gap: 5px; }
+  .move-pad { left: max(10px, env(safe-area-inset-left)); grid-template-columns: repeat(3, 44px); }
+  .move-up { grid-column: 2; }
+  .move-left { grid-column: 1; grid-row: 2; }
+  .move-down { grid-column: 2; grid-row: 2; }
+  .move-right { grid-column: 3; grid-row: 2; }
+  .touch-actions { right: max(10px, env(safe-area-inset-right)); grid-template-columns: repeat(2, 55px); }
+  #touchControls .touch-actions button { width: 55px; }
+  #touchControls .touch-interact { grid-column: 1/-1; width: 115px; color: #263421; background: #e5c67e; }
+  .hint { bottom: 128px; width: calc(100% - 20px); max-width: 380px; padding: 8px 10px; white-space: normal; font-size: 10px; text-align: center; }
+  .hint .desktop-tip { display: none; }
+  .hint > .mobile-tip { display: block; }
+  .water-button { left: 10px; bottom: 184px; transform: none; }
+  .guide-button { bottom: 184px; }
+  .cow-help-button { bottom: 222px; }
+  #helpCowButton, #petCowButton { max-width: calc(50% - 14px); white-space: normal; min-height: 40px; }
+}
